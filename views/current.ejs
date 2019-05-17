@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    
+    <script>
+      window.onload = function () {
+        var chart_load_interval = 10000;
+        
+        var c_data = [];
+        var t_data = [];
+        var c_counter = -1;
+        var t_counter = -1;
+
+        $.ajax({
+          async: false,
+          type: 'GET',
+          url: 'dq/select index, elec_current, temperature, target from current_and_temp_live order by index desc limit 100',
+          success: function (tole) {
+            //callback
+            for (i = 0; i < 100; i += 1) {
+              // console.log(tole[i]);
+              let tole_a = tole[i].index.valueOf();
+              let tole_b = tole[i].elec_current.valueOf();
+              let tole_c = tole[i].temperature.valueOf();
+              let tole_d = tole[i].target.valueOf();
+              if (i == 0) {
+                c_counter = tole_a + 1;
+                t_counter = tole_a + 1;
+              }
+              c_data.push({
+                x: (tole_a),
+                y: (tole_b),
+                name: (tole_d)
+              });
+              t_data.push({
+                x: (tole_a),
+                y: (tole_c),
+                name: (tole_d)
+              });
+              // console.log(tole_a);
+              // console.log(tole_b);
+            }
+          }
+        });
+        
+        Highcharts.chart('current', {
+          chart: {
+            type: 'spline',
+            animation: Highcharts.svg, // don't animate in old IE
+            marginRight: 10,
+            zoomType: 'x',
+            panning: true,
+            panKey: 'shift',
+            events: {
+              load: function () {
+
+                // set up the updating of the chart each second
+                var series = this.series[0];
+
+                setInterval(function () {
+                  $.ajax({
+                    async: false,
+                    type: 'GET',
+                    url: "dq/select index, elec_current, target from current_and_temp_live where index = " + (c_counter),
+                    success: function (data) {
+                      //callback
+                      console.log("c_counter: " + c_counter);
+                      console.log("length: " + data.length);
+                      if (data.length > 0) {
+                        data.forEach(function (row) {
+                          let x = row.index;
+                          // let x = (new Date()).getTime();
+                          let y = row.elec_current;
+                          let target = row.target;
+                          // let y = Math.random();
+                          series.addPoint([x, y, target], true, true);
+                        })
+                        c_counter++;                        
+                      }
+                    }
+                  });
+
+                }, chart_load_interval);
+              }
+            }
+          },
+
+          time: {
+            useUTC: false
+          },
+
+          title: {
+            text: 'Electrical Current Data'
+          },
+          xAxis: {
+            tickPixelInterval: 150,
+            type: 'linear',
+            // type: 'category',
+            // uniqueNames: false,
+
+          },
+          yAxis: {
+            title: {
+              text: 'Value'
+            },
+            plotLines: [{
+              value: 0,
+              width: 1,
+              color: '#808080'
+            }]
+          },
+          tooltip: {
+            headerFormat: '<b>{series.name}</b><br/>',
+            pointFormat: '{point.name}<br/>{point.y}'
+          },
+          legend: {
+            enabled: false
+          },
+          exporting: {
+            enabled: false
+          },
+          series: [{
+            name: 'Electrical Current',
+            data: (function () {
+              // generate an array of random data
+              return c_data
+            }())
+          }]
+        });
+
+        
+        Highcharts.chart('temperature', {
+          chart: {
+            type: 'spline',
+            animation: Highcharts.svg, // don't animate in old IE
+            marginRight: 10,
+            zoomType: 'x',
+            panning: true,
+            panKey: 'shift',
+            events: {
+              load: function () {
+
+                // set up the updating of the chart each second
+                var series = this.series[0];
+
+                setInterval(function () {
+                  $.ajax({
+                    async: false,
+                    type: 'GET',
+                    url: "dq/select index, temperature, target from current_and_temp_live where index = " + t_counter,
+                    success: function (data) {
+                      //callback
+                      console.log("t_counter: " + t_counter);
+                      console.log("length: " + data.length);
+                      if (data.length > 0) {
+                        data.forEach(function (row) {
+                          let x = row.index;
+                          // let x = (new Date()).getTime();
+                          let y = row.temperature;
+                          let target = row.target;
+                          // let y = Math.random();
+                          series.addPoint([x, y, target], true, true);
+                        })
+                        t_counter++;                        
+                      }
+                    }
+                  });
+
+                }, chart_load_interval);
+              }
+            }
+          },
+
+          time: {
+            useUTC: false
+          },
+
+          title: {
+            text: 'Temperature Data'
+          },
+          xAxis: {
+            type: 'linear',
+            tickPixelInterval: 150,
+            // type: 'category',
+            // uniqueNames: false,
+
+          },
+          yAxis: {
+            title: {
+              text: 'Value'
+            },
+            plotLines: [{
+              value: 0,
+              width: 1,
+              color: '#808080'
+            }]
+          },
+          tooltip: {
+            headerFormat: '<b>{series.name}</b><br/>',
+            pointFormat: '{point.name}<br/>{point.y:.2f}'
+          },
+          legend: {
+            enabled: false
+          },
+          exporting: {
+            enabled: false
+          },
+          series: [{
+            name: 'Temperature',
+            data: (function () {
+              // generate an array of random data
+              
+              return t_data;
+            }())
+          }]
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <!-- <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p> -->
+    <div id="current" style="min-width: 310px; height: 400px; margin: auto auto"></div>
+    <div id="temperature" style="min-width: 310px; height: 400px; margin: 100px auto"></div>
+  </body>
+</html>
