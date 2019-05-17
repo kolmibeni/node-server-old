@@ -1,5 +1,5 @@
 {
-  "name": "node-server",
+  "name": "random-url-selector",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -13,7 +13,7 @@
     "express": "~4.16.0",
     "http-errors": "~1.6.2",
     "morgan": "~1.9.0",
-    "odbc": "^1.4.5",
+    "random": "^2.1.1",
     "request": "^2.88.0"
   }
 }
