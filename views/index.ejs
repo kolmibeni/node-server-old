@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>    
+  </head>
+  <body>
+    <!-- <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p> -->
+    <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto">
+    
+    <ul>  
+      <li><a href="/">Home</a></li>
+      <li><a href="vibration">Vibration Chart</a></li>
+      <li><a href="current">Current and Temperature Chart</a></li>
+      <li><a href="predictionHistory">Prediction History Chart</a></li>
+    </ul>
+    <br/>Other APIs:
+    <ul>
+      <li><a href="latest">Latest prediction result</a></li>
+      <li><a href="latest_current_temp">Latest current and temperature value</a></li>
+    </ul>
+    </div>
+  </body>
+</html>

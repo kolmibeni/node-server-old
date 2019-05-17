@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+
+    <script>
+      window.onload = function () {
+        var chart_load_interval = 10000;
+        
+        var v_counter = -1;
+        var data = [];
+
+        $.ajax({
+          async: false,
+          type: 'GET',
+          url: 'dq/select index, time, vibration from canbus order by time desc limit 100',
+          success: function (tole) {
+            //callback
+            for (i = 0; i < 100; i += 1) {
+              // console.log(tole[i]);
+              let tole_a = tole[i].time.valueOf();
+              let tole_b = tole[i].vibration.valueOf();
+              let tole_c = tole[i].index.valueOf();
+              if (i == 0) {
+                v_counter = tole_c + 1;
+              }
+              data.push({
+                x: (tole_a),
+                y: (tole_b)
+              });
+              // console.log(tole_a);
+              // console.log(tole_b);
+            }
+          }
+        });
+
+        Highcharts.chart('vibration', {
+          chart: {
+            type: 'spline',
+            animation: Highcharts.svg, // don't animate in old IE
+            marginRight: 10,
+            zoomType: 'x',
+            panning: true,
+            panKey: 'shift',
+            events: {
+              load: function () {
+
+                // set up the updating of the chart each second
+                var series = this.series[0];
+
+                setInterval(function () {
+                  $.ajax({
+                    async: false,
+                    type: 'GET',
+                    url: "dq/select time, vibration from canbus where index = " + v_counter,
+                    success: function (data) {
+                      //callback
+                      if (data.length > 0) {
+                        data.forEach(function(row) {
+                          let x = row.time;
+                          // let x = (new Date()).getTime();
+                          let y = row.vibration;
+                          // let y = Math.random();
+                          series.addPoint([x, y], true, true);
+                        })
+                        v_counter++;                          
+                      }
+                    }
+                  });
+
+                }, chart_load_interval);
+              }
+            }
+          },
+
+          time: {
+            useUTC: false
+          },
+
+          title: {
+            text: 'Vibration Data'
+          },
+          xAxis: {
+            type: 'linear',
+            tickPixelInterval: 150,
+
+          },
+          yAxis: {
+            title: {
+              text: 'Value'
+            },
+            plotLines: [{
+              value: 0,
+              width: 1,
+              color: '#808080'
+            }]
+          },
+          tooltip: {
+            headerFormat: '<b>{series.name}</b><br/>',
+            pointFormat: 'Time: {point.x:.5f}<br/>Vibration: {point.y}'
+          },
+          legend: {
+            enabled: false
+          },
+          exporting: {
+            enabled: false
+          },
+          series: [{
+            name: 'Vibration',
+            data: (function () {
+              // generate an array of random data
+              
+              return data;
+            }())
+          }]
+        });
+        
+      }
+    </script>
+  </head>
+  <body>
+    <!-- <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p> -->
+    <div id="vibration" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+  </body>
+</html>
