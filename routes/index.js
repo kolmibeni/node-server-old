@@ -104,6 +104,7 @@ setInterval(intervalInsertPredict, 10000);
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
+  console.log('INDEX');
   res.render('index', { title: 'Express' });
 });
 
